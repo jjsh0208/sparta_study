@@ -4,14 +4,11 @@ import com.sparta.myselectshop.dto.ProductMypriceRequestDto;
 import com.sparta.myselectshop.dto.ProductRequestDto;
 import com.sparta.myselectshop.dto.ProductResponseDto;
 import com.sparta.myselectshop.security.UserDetailsImpl;
-import com.sparta.myselectshop.security.UserDetailsServiceImpl;
 import com.sparta.myselectshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,4 +40,12 @@ public class ProductController {
         );
     }
 
+    @PostMapping("/products/{productsId}/folder")
+    public void addFolder(
+            @PathVariable Long productsId,
+            @RequestParam Long folderId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails)
+    {
+        productService.addFolder(productsId,folderId,userDetails.getUser());
+    }
 }
