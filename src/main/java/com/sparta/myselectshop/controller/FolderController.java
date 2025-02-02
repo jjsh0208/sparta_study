@@ -34,18 +34,6 @@ public class FolderController {
         return folderService.getFolders(userDetails.getUser() );
     }
 
-    // Exception 해당 예외처리 발생을 처리하는 메서드
-    // 컨트롤러에서 발생한 예외처리를 처리하기 위한 어노테이션
-    @ExceptionHandler({IllegalArgumentException.class})
-    public ResponseEntity<RestApiException> handleException(IllegalArgumentException ex) {
-        System.out.println("FolderController.handleException");
-        RestApiException restApiException = new RestApiException(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(
-                // HTTP body
-                restApiException,
-                // HTTP status code
-                HttpStatus.BAD_REQUEST
-        );
-    }
+
 
 }
