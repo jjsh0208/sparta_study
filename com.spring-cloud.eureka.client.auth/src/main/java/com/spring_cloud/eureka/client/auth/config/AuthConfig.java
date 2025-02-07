@@ -1,4 +1,4 @@
-package com.spring_cloud.eureka.client.auth;
+package com.spring_cloud.eureka.client.auth.config;
 
 import org.springframework.context.annotation.Configuration;
 
@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -23,6 +25,7 @@ public class AuthConfig {
                 .authorizeRequests(authorize -> authorize
                         // /auth/signIn 경로에 대한 접근을 허용합니다. 이 경로는 인증 없이 접근할 수 있습니다.
                         .requestMatchers("/auth/signIn").permitAll()
+                        .requestMatchers("/auth/signUp").permitAll()
                         // 그 외의 모든 요청은 인증이 필요합니다.
                         .anyRequest().authenticated()
                 )
@@ -34,4 +37,7 @@ public class AuthConfig {
         // 설정된 보안 필터 체인을 반환합니다.
         return http.build();
     }
+
+
+
 }

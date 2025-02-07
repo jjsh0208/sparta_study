@@ -1,31 +1,37 @@
 package com.spring_cloud.eureka.client.auth;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.spring_cloud.eureka.client.auth.dto.SignInReqDto;
+import com.spring_cloud.eureka.client.auth.dto.SignUpReqDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
 
-    public final AuthService authService;
+    private final AuthService authService;
 
-    @GetMapping("auth/signIn")
-    public ResponseEntity<?> createAuthToken(@RequestParam String user_id){
-        return ResponseEntity.ok(new AuthResponse(authService.createAccessToken(user_id)));
+    @PostMapping("/auth/signIn")
+    public ResponseEntity<?> createAuthToken(@RequestBody SignInReqDto signInReqDto){
+        try{
+            String token = authService.signIn(signInReqDto);
+            return ResponseEntity.ok(token);
+        }catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "status" , HttpStatus.UNAUTHORIZED.value(),
+                            "message", e.getMessage()
+                    ));
+        }
     }
 
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    static class AuthResponse{
-        private String accessToken;
-
+    @PostMapping("/auth/signUp")
+    public ResponseEntity<?> signUp(@RequestBody SignUpReqDto signUpReqDto){
+        return ResponseEntity.ok(authService.signUp(signUpReqDto));
     }
+
 }

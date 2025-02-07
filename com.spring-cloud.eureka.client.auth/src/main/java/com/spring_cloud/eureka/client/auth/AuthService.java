@@ -1,17 +1,24 @@
 package com.spring_cloud.eureka.client.auth;
 
+import com.spring_cloud.eureka.client.auth.core.domain.User;
+import com.spring_cloud.eureka.client.auth.core.enums.UserRole;
+import com.spring_cloud.eureka.client.auth.dto.SignInReqDto;
+import com.spring_cloud.eureka.client.auth.dto.SignUpReqDto;
+import com.spring_cloud.eureka.client.auth.dto.UserResDto;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.SecretKey;
-import javax.xml.crypto.Data;
 import java.util.Date;
 
 @Service
+@Transactional
 public class AuthService {
 
     @Value("${spring.application.name}")
@@ -20,22 +27,68 @@ public class AuthService {
     @Value("${service.jwt.access-expiration}")
     private Long accessExpiration;
 
-
     private final SecretKey secretKey;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(@Value("${service.jwt.secret-key}") String secretKey){
+    /*
+    * 생성자
+    * Base64 URL 인코딩된 비밀키를 디코딩하여 HMAC-SHA 알고리즘에 적합한 SecretKey 객체를 생성
+    * */
+    public AuthService(@Value("${service.jwt.secret-key}") String secretKey,
+                       UserRepository userRepository, PasswordEncoder passwordEncoder){
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(secretKey));
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public String createAccessToken(String user_id){
+    /*
+    * 로그인 정보를 받아 사용자 인증
+    * 
+    * @param  SignInReqDto (userId 사용자 ID , password 비밀번호)
+    * @Return JWT 엑세스 토큰
+    * */
+    public String signIn(SignInReqDto signInReqDto) {
+        User user = userRepository.findByUserId(signInReqDto.getUserId())
+                .orElseThrow(()-> new IllegalArgumentException("Invalid user Id or password"));
+
+        if (!passwordEncoder.matches(signInReqDto.getPassword(), user.getPassword())){
+            throw new IllegalArgumentException("Invalid user Id or password");
+        }
+        return createAccessToken(user.getUserId(), user.getRole());
+    }
+
+    /*
+    * 사용자 정보를 받아 사용자 등록
+    *
+    * @param  SignUpReqDto (userId 사용자 ID, username 회원명, password 비밀번호)
+    * @Return SignUpResDto  (userId 사용자 ID, username 회원명, role 회원권한)
+    * */
+    public UserResDto signUp(SignUpReqDto signInReqDto) {
+        User user = User.builder()
+                .userId(signInReqDto.getUserId())
+                .password(passwordEncoder.encode(signInReqDto.getPassword()))
+                .username(signInReqDto.getUsername())
+                .role(UserRole.MEMBER.toString())
+                .build();
+
+        return new UserResDto(userRepository.save(user));
+    }
+
+
+    /*
+     *  사용자 계정을 받아 JWT 엑세스 토큰을 생성한다.
+     * */
+    public String createAccessToken(String userId ,String role){
         return Jwts.builder()
-                .claim("user_id",user_id)
-                .claim("role","ADMIN")
+                .claim("USER_ID",userId)
+                .claim("USER_ROLE",role)
                 .issuer(issuer) //발급자
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + accessExpiration))
                 .signWith(secretKey , SignatureAlgorithm.HS512)
                 .compact();
     }
+
 
 }
