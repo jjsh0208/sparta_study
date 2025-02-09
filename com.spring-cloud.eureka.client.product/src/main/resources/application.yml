@@ -1,9 +1,30 @@
 spring:
   application:
     name: product-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/msa_mini_project
+    username: root
+    password: Gusdk5540!
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    database: mysql
+    hibernate:
+      ddl-auto: update
+
 server:
   port: 19093
+
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/ # 연결할 유레카 서버 포트
+
+#management:
+#  zipkin:
+#    tracing:
+#      endpoint: "http://localhost:9411/api/v2/spans"
+#  tracing:
+#    sampling:
+#      probability: 1.0

@@ -1,8 +1,8 @@
 package com.spring_cloud.eureka.client.auth.core.domain;
 
+import com.spring_cloud.eureka.client.auth.user.UserResDto;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+
 import jakarta.persistence.Id;
 import lombok.*;
 
@@ -17,4 +17,18 @@ public class User {
     private String username;
     private String password;
     private String role;
+
+
+    /*
+    *  DTO로 변환하는 메서드
+    * */
+    public UserResDto toResDto(){
+        return new UserResDto(
+                this.userId,
+                this.username,
+                this.role
+        );
+    }
+
+
 }

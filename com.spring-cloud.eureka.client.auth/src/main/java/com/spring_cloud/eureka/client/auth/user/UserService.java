@@ -1,12 +1,8 @@
-package com.spring_cloud.eureka.client.auth;
+package com.spring_cloud.eureka.client.auth.user;
 
 import com.spring_cloud.eureka.client.auth.core.domain.User;
 import com.spring_cloud.eureka.client.auth.core.enums.UserRole;
-import com.spring_cloud.eureka.client.auth.dto.SignInReqDto;
-import com.spring_cloud.eureka.client.auth.dto.SignUpReqDto;
-import com.spring_cloud.eureka.client.auth.dto.UserResDto;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +15,7 @@ import java.util.Date;
 
 @Service
 @Transactional
-public class AuthService {
+public class UserService {
 
     @Value("${spring.application.name}")
     private String issuer;
@@ -35,7 +31,7 @@ public class AuthService {
     * 생성자
     * Base64 URL 인코딩된 비밀키를 디코딩하여 HMAC-SHA 알고리즘에 적합한 SecretKey 객체를 생성
     * */
-    public AuthService(@Value("${service.jwt.secret-key}") String secretKey,
+    public UserService(@Value("${service.jwt.secret-key}") String secretKey,
                        UserRepository userRepository, PasswordEncoder passwordEncoder){
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(secretKey));
         this.userRepository = userRepository;
@@ -71,8 +67,7 @@ public class AuthService {
                 .username(signInReqDto.getUsername())
                 .role(UserRole.MEMBER.toString())
                 .build();
-
-        return new UserResDto(userRepository.save(user));
+        return  userRepository.save(user).toResDto();
     }
 
 
@@ -86,7 +81,7 @@ public class AuthService {
                 .issuer(issuer) //발급자
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + accessExpiration))
-                .signWith(secretKey , SignatureAlgorithm.HS512)
+                .signWith(secretKey , Jwts.SIG.HS512)
                 .compact();
     }
 

@@ -28,13 +28,13 @@ public class LocalJwtAuthenticationFilter implements GlobalFilter {
 
         String path = exchange.getRequest().getURI().getPath();
 
-        if (path.equals("/auth/signIn")){
+        if (path.equals("/api/auth/signIn") || path.equals("/api/auth/signUp")){
             return chain.filter(exchange); // 해당
         }
 
         String token = extractToken(exchange);
 
-        if (token == null || !validateToken(token)){
+        if (token == null || !validateToken(token ,exchange)){
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
@@ -51,16 +51,19 @@ public class LocalJwtAuthenticationFilter implements GlobalFilter {
         return null;
     }
 
-    private boolean validateToken(String token){
+    private boolean validateToken(String token, ServerWebExchange exchange){
         try{
             SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(secretKey));
             Jws<Claims> claimsJws = Jwts.parser()
                     .verifyWith(key)
                     .build().parseSignedClaims(token);
             log.info("#####payload :: " + claimsJws.getPayload().toString());
-
+            Claims claims = claimsJws.getBody();
+            exchange.getRequest().mutate()
+                    .header("X-User-Id", claims.get("USER_ID").toString())
+                    .header("X-Role", claims.get("USER_ROLE").toString())
+                    .build();
             // 검증 로직 추가 가능
-
             return true;
         }catch (Exception e){
             return false;

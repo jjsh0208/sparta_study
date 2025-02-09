@@ -1,7 +1,5 @@
-package com.spring_cloud.eureka.client.auth;
+package com.spring_cloud.eureka.client.auth.user;
 
-import com.spring_cloud.eureka.client.auth.dto.SignInReqDto;
-import com.spring_cloud.eureka.client.auth.dto.SignUpReqDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,15 +9,16 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService authService;
+    private final UserService userService;
 
-    @PostMapping("/auth/signIn")
+    @PostMapping("/signIn")
     public ResponseEntity<?> createAuthToken(@RequestBody SignInReqDto signInReqDto){
         try{
-            String token = authService.signIn(signInReqDto);
-            return ResponseEntity.ok(token);
+            String token = userService.signIn(signInReqDto);
+            return ResponseEntity.ok(new SignInResDto(token));
         }catch (IllegalArgumentException e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of(
@@ -29,9 +28,10 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/auth/signUp")
+    @PostMapping("/signUp")
     public ResponseEntity<?> signUp(@RequestBody SignUpReqDto signUpReqDto){
-        return ResponseEntity.ok(authService.signUp(signUpReqDto));
+        System.out.println("test");
+        return ResponseEntity.ok(userService.signUp(signUpReqDto));
     }
 
 }

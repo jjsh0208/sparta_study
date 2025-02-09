@@ -1,4 +1,4 @@
-package com.spring_cloud.eureka.client.auth.dto;
+package com.spring_cloud.eureka.client.auth.user;
 
 import com.spring_cloud.eureka.client.auth.core.domain.User;
 import lombok.AllArgsConstructor;
@@ -13,9 +13,4 @@ public class UserResDto {
     private String username;
     private String role;
 
-    public UserResDto(User user){
-        this.userId = user.getUserId();
-        this.username = user.getUsername();
-        this.role = user.getRole();
-    }
 }
