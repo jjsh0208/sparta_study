@@ -26,12 +26,10 @@ public class OrderService {
     private final ProductClient productClient;
 
     public OrderResDto createOrder(OrderReqDto orderReqDto, String userId) {
-        Long productId = null;
-        try{
             Order order = Order.createOrder(userId);
 
             for (Map.Entry<Long,Integer> entry : orderReqDto.getOrderProductIds().entrySet()){
-                productId = entry.getKey();
+                Long productId = entry.getKey();
                 Integer quantity = entry.getValue();
 
                 ProductResDto product = productClient.getProductDetail(productId).getBody();
@@ -46,9 +44,7 @@ public class OrderService {
             }
 
             return orderRepository.save(order).toResDto();
-        } catch (ResponseStatusException e){ // service 에서 발생한 에러를 파악
-            throw new RuntimeException("Error in ProductService : "+ e.getReason(),e);
-        }
+
 
     }
 
@@ -98,7 +94,7 @@ public class OrderService {
         return orderRepository.save(order).toResDto();
     }
 
-    public void deleteOder(Long orderId, String userId, String role) {
+    public void deleteOrder(Long orderId, String userId, String role) {
         Order order = orderRepository.findById(orderId)
                 .filter(p -> p.getDeletedAt() == null)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));

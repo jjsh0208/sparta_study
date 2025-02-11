@@ -1,6 +1,23 @@
+server:
+  port: 0
+
 spring:
   application:
     name: order-service
+
+  profiles: # 현재 활성화할 프로파일을 지정
+    active: local # config server 에서 local 파일을 기준으로 설정파일을 검색하도록 지정한다.
+  config:
+    import: "configserver:" # config server 로 부터 설정 파일을 가져오도록 설정
+
+  # config server를 서비스 디스커버리를 통해 찾을 지 여부를 설정
+  # enable이 true로 설정되면 클라이언트는 config server의 위치를 eureka 서버를 통해 동적으로 찾는다.
+  # service-id 는 프로파일을 찾아올 config server 의 이름 식별자
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
 
   datasource:
     url: jdbc:mysql://localhost:3306/msa_order
@@ -12,10 +29,17 @@ spring:
     database: mysql
     hibernate:
       ddl-auto: update
-server:
-  port: 19092
+
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
+
+
+management:
+  endpoints: # 특정 엔드포인트 노출
+    web:
+      exposure:
+        include: refresh  #refresh 엔드포인트를 활성화한다.
+        # /actuator/refresh 경로에서 config server의 설정 정보를 다시 가져오도록 강제로 갱신 요청을 보낸다 (동적 변경)

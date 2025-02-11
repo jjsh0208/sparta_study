@@ -16,7 +16,10 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public ProductResDto createProduct(ProductReqDto productReqDto, String userId) {
+    public ProductResDto createProduct(ProductReqDto productReqDto, String userId, String role) {
+
+        managerCheck(role);
+
         Product product = Product.createProduct(productReqDto,userId);
         Product savedProduct = productRepository.save(product);
         return  savedProduct.toResDto();
@@ -25,7 +28,6 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<ProductResDto> getProducts(Pageable pageable) {
         Page<Product> productPage = productRepository.findAllNotDeleted(pageable);
-
         return productPage.map(Product :: toResDto);
     }
 
@@ -36,10 +38,12 @@ public class ProductService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found or has been deleted"));
 
        return product.toResDto();
-
     }
 
-    public ProductResDto updateProduct(Long productId, ProductReqDto productReqDto, String userId) {
+    public ProductResDto updateProduct(Long productId, ProductReqDto productReqDto, String userId, String role) {
+
+        managerCheck(role);
+
         Product product = productRepository.findById(productId)
                 .filter(p -> p.getDeletedAt() == null)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found or has been deleted"));
@@ -50,14 +54,16 @@ public class ProductService {
         return updatedProduct.toResDto();
     }
 
-    public void deleteProduct(Long productId, String deleteBy) {
+    public void deleteProduct(Long productId, String deleteBy, String role) {
+
+        managerCheck(role);
+
         Product product = productRepository.findById(productId)
                 .filter(p -> p.getDeletedAt() == null)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found or has been deleted"));
 
         product.deletedProduct(deleteBy);
         productRepository.save(product);
-
     }
 
     public void reduceProductQuantity(Long productId, int quantity) {
@@ -72,4 +78,9 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    private void managerCheck(String role){
+        if (!"MANAGER".equals(role)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. User role is not MANAGER.");
+        }
+    }
 }

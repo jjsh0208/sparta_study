@@ -1,12 +1,24 @@
 server:
-  port: 19091  # 게이트웨이 서비스가 실행될 포트 번호
+  port: 0  # 게이트웨이 서비스가 실행될 포트 번호
 
 spring:
-  main:
-    web-application-type: reactive  # Spring 애플리케이션이 리액티브 웹 애플리케이션으로 설정됨
   application:
     name: gateway-service  # 애플리케이션 이름을 'gateway-service'로 설정
+  main:
+    web-application-type: reactive  # Spring 애플리케이션이 리액티브 웹 애플리케이션으로 설정됨
+
+  profiles: # 현재 활성화할 프로파일을 지정
+    active: local # config server 에서 local 파일을 기준으로 설정파일을 검색하도록 지정한다.
+  config:
+    import: "configserver:" # config server 로 부터 설정 파일을 가져오도록 설정
+
+
   cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+
     gateway:
       routes:  # Spring Cloud Gateway의 라우팅 설정
         - id: order-service  # 라우트 식별자
@@ -27,11 +39,18 @@ spring:
         locator:
           enabled: true  # 서비스 디스커버리를 통해 동적으로 라우트를 생성하도록 설정
 
+
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/  # Eureka 서버의 URL을 지정
 
+management:
+  endpoints: # 특정 엔드포인트 노출
+    web:
+      exposure:
+        include: refresh  #refresh 엔드포인트를 활성화한다.
+        # /actuator/refresh 경로에서 config server의 설정 정보를 다시 가져오도록 강제로 갱신 요청을 보낸다 (동적 변경)
 
 service:
   jwt:
