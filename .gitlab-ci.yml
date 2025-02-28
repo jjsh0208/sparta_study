@@ -39,7 +39,6 @@ docker build:
     - docker build -t $DOCKER_IMAGE .
     - docker tag $DOCKER_IMAGE:latest 522814719650.dkr.ecr.ap-northeast-2.amazonaws.com/$DOCKER_IMAGE:$TAG_NAME
     - aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 522814719650.dkr.ecr.ap-northeast-2.amazonaws.com
-    - docker push 730335597998.dkr.ecr.ap-northeast-2.amazonaws.com/$DOCKER_IMAGE:$TAG_NAME
     - docker push 522814719650.dkr.ecr.ap-northeast-2.amazonaws.com/$DOCKER_IMAGE:$TAG_NAME
 
 deploy:
