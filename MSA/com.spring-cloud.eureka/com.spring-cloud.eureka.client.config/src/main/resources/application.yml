@@ -1,0 +1,34 @@
+server:
+  port: 8090
+
+# 현재 활성화할 스프링 프로파일을 지정
+# native 는 config server가 로컬 파일 시스템에서 설정 파일을 읽도록 설정하는 프로파일이다.
+# 보통은 git 또는 외부 저장소를 사용
+spring:
+  profiles:
+    active: native
+
+# 다른 마이크로서비스가 설정 정보를 요청할 때 config server 의 이름을 참조하기위한 name 설정
+  application:
+    name: config-server
+
+# config server가 설정 파일을 검색할 위치를 지정한다.
+# classpath:/ 는 resource 폴더를 의미한다.
+# 현재 설정으로는 resource 폴더 안의 config-repo 폴더를 의미
+  cloud:
+    config:
+      server:
+        native:
+          search-locations:
+           - classpath:/config-repo/auth
+           - classpath:/config-repo/gateway
+           - classpath:/config-repo/order
+           - classpath:/config-repo/product
+
+# config server 도 eureka 서버에 등록되어 사용된다.
+# 이를 통해 config server 는 eureka 에 자신의 정보를 등록하고 다른 마이크로서비스는 유레카를 통해
+# config server의 위치를 동적으로 찾아낸다.
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
