@@ -20,5 +20,4 @@ public class ProducerController {
         producerService.sendMessage(topic,key,message);
         return "Message send to kafka topic";
     }
-
 }
